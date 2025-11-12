@@ -1,45 +1,64 @@
-//everything with the oled remains the same 
-#include <MPU9250_asukiaaa.h> // added MPU library
+// both mpu and oled initialization code remains
+//threshold to detect motion
+#define MOTION_THRESHOLD 0.7 
+//records milliseconds
+unsigned long lastGestureTime = 0; 
+//time inbetween movements
+#define DEBOUNCE_DELAY 300
 
-MPU9250_asukiaaa mpu; // created MPU object
 
 void setup() {
-  Serial.begin(115200);
-  Wire.begin();
+  // everything remains the same, just removed the Serial.print lines
+}
 
-  if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
-  //code remains the same as previous
-  }
-  
-  // the display hello code was temporary and being replaced
-  display.println("Booting...");
-  display.display();
+// MPU detects movement using threshold
+String detectGesture(float ax, float ay, float az, float gx, float gy, float gz) {
+  if (abs(ax) > MOTION_THRESHOLD && ax > 0.6) return "UP";
+  if (abs(ax) > MOTION_THRESHOLD && ax < -0.6) return "DOWN";
+  if (abs(ay) > MOTION_THRESHOLD && ay > 0.6) return "LEFT";
+  if (abs(ay) > MOTION_THRESHOLD && ay < -0.6) return "RIGHT";
+  return "";
+}
 
-  // added code to check if MPU was properly wired and connected
-  mpu.setWire(&Wire);
-  mpu.beginAccel();
-  mpu.beginGyro();
-  Serial.println("MPU9250 Ready.");
-
-  
+//method for the user to know when the product is ready to use (displays on OLED)
+void showReady() {
   display.clearDisplay();
-  display.print("Ready.");
+  display.setTextSize(1);
+  display.setCursor(30, 25);
+  display.print("Ready...");
   display.display();
 }
 
+
 void loop() {
-  //code to get acceleration from the MPU 
+  //remains the same
   mpu.accelUpdate();
   mpu.gyroUpdate();
 
   float ax = mpu.accelX();
   float ay = mpu.accelY();
+  float az = mpu.accelZ();
   float gx = mpu.gyroX();
+  float gy = mpu.gyroY();
+  float gz = mpu.gyroZ();
 
-  Serial.print("AX: "); Serial.print(ax);
-  Serial.print(" | AY: "); Serial.print(ay);
-  Serial.print(" | GX: "); Serial.println(gx);
+  // replaced the Serial.print
+  String gesture = detectGesture(ax, ay, az, gx, gy, gz);
+  unsigned long now = millis();
+
+  if (gesture != "" && now - lastGestureTime > DEBOUNCE_DELAY) {
+    lastGestureTime = now;
+    
+    // show gesture on OLED
+    display.clearDisplay();
+    display.setTextSize(2);
+    display.setCursor(25, 20);
+    display.print(gesture);
+    display.display();
+    
+    delay(500); // Hold gesture on screen
+    showReady();
+  }
   
-  
-  delay(100); //added a delay so that it's easier to read
+  delay(10);
 }
