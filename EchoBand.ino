@@ -1,30 +1,45 @@
-#include <Wire.h>
-#include <Adafruit_SSD1306.h>
+//everything with the oled remains the same 
+#include <MPU9250_asukiaaa.h> // added MPU library
 
-#define SCREEN_WIDTH 128
-#define SCREEN_HEIGHT 64
-#define OLED_RESET -1
-
-Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
+MPU9250_asukiaaa mpu; // created MPU object
 
 void setup() {
   Serial.begin(115200);
   Wire.begin();
 
   if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
-    Serial.println(F("OLED not found!"));
-    while (true);
+  //code remains the same as previous
   }
+  
+  // the display hello code was temporary and being replaced
+  display.println("Booting...");
+  display.display();
 
+  // added code to check if MPU was properly wired and connected
+  mpu.setWire(&Wire);
+  mpu.beginAccel();
+  mpu.beginGyro();
+  Serial.println("MPU9250 Ready.");
+
+  
   display.clearDisplay();
-  display.setTextSize(2);
-  display.setTextColor(SSD1306_WHITE);
-  display.setCursor(10, 25);
-  display.println("Hello!");
+  display.print("Ready.");
   display.display();
 }
 
 void loop() {
-  // Do nothing yet
-  delay(100);
+  //code to get acceleration from the MPU 
+  mpu.accelUpdate();
+  mpu.gyroUpdate();
+
+  float ax = mpu.accelX();
+  float ay = mpu.accelY();
+  float gx = mpu.gyroX();
+
+  Serial.print("AX: "); Serial.print(ax);
+  Serial.print(" | AY: "); Serial.print(ay);
+  Serial.print(" | GX: "); Serial.println(gx);
+  
+  
+  delay(100); //added a delay so that it's easier to read
 }
