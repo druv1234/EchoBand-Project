@@ -1,6 +1,6 @@
 # EchoBand-Project
 Project overview - ESP32 motion gesture band using MPU9250 and OLED screen to communicate using combinations to create words
-Hardware components used (If any parts were bought by the team they should be linked here as well)
+Hardware components used 
  - ESP32
  - MPU9250
  - OLED Display
